@@ -17,8 +17,6 @@ enum Bike {
     PowerZones {
         /// Current functional threshold power
         ftp: i32,
-        /// Current weight
-        weight: f32,
     },
     Wkg {
         /// Current functional threshold power
@@ -36,7 +34,7 @@ pub fn main() -> Result<()> {
 
     match command {
         Bike::TyrePressure { width, rider_weight, bike_weight } => tyre_pressure(width, rider_weight, bike_weight),
-        Bike::PowerZones { ftp, weight} => power_zones(ftp, weight),
+        Bike::PowerZones { ftp } => power_zones(ftp),
         Bike::Wkg { ftp, weight } => watt_per_kilo(ftp, weight),
         _ => todo!(),
     }
@@ -55,7 +53,7 @@ fn tyre_pressure(tyrewidth: i32, rider_weight: f32, bike_weight: f32) {
     println!("Front: {psi_front:.0} psi\nRear:  {psi_back:.0} psi");
 }
 
-fn power_zones(ftp: i32, weight: f32) {
+fn power_zones(ftp: i32) {
     let zones = [
         ("Recovery", 0, 55),
         ("Endurance", 55, 75),
@@ -78,6 +76,14 @@ fn power_zones(ftp: i32, weight: f32) {
 }
 
 fn watt_per_kilo(ftp: i32, weight: f32) {
+    println!("Theoretical W/kg");
+    let wkg = ftp as f32 / weight;
+    println!("    NOW: {wkg:.1} W/kg");
+    for wkg in [4.0, 3.5, 3.0] {
+        let power = wkg * weight;
+        println!("    for {wkg} W/kg, need {power:.1} W");
+    }
+    println!();
     ftp_for_wkg(4.0, weight);
     ftp_for_wkg(3.5, weight);
 }
