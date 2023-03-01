@@ -24,8 +24,24 @@ enum Bike {
         /// Current weight
         weight: f32
     },
+    #[structopt(aliases = &["gears", "gi", "gearinches"])]
     GearInches {
-
+        chainring: i32,
+        cassette_small: i32, 
+        cassette_large: i32,
+        as_gearinches: Option<bool>,
+    },
+    Speed {
+        cadence: i32,
+        gear_ratio: f32,
+        #[structopt(long, default_value = "26.5")]
+        wheel_diameter: f32,
+    },
+    Cadence {
+        speed: f32,
+        gear_ratio: f32,
+        #[structopt(long, default_value = "26.5")]
+        wheel_diameter: f32,
     }
 }
 
@@ -36,7 +52,9 @@ pub fn main() -> Result<()> {
         Bike::TyrePressure { width, rider_weight, bike_weight } => tyre_pressure(width, rider_weight, bike_weight),
         Bike::PowerZones { ftp } => power_zones(ftp),
         Bike::Wkg { ftp, weight } => watt_per_kilo(ftp, weight),
-        _ => todo!(),
+        Bike::Speed{ cadence, gear_ratio, wheel_diameter } => cadence_to_speed(cadence, gear_ratio, wheel_diameter),
+        Bike::Cadence{ speed, gear_ratio, wheel_diameter } => speed_to_cadence(speed, gear_ratio, wheel_diameter),
+        Bike::GearInches{ chainring, cassette_small, cassette_large, as_gearinches } => gear_inches(chainring, (cassette_small, cassette_large), as_gearinches),
     }
     Ok(())
 }
@@ -96,4 +114,40 @@ fn ftp_for_wkg(wkg: f32, weight: f32) {
         println!("...at {delta} kg, need {power:.0}W");
     }
     println!();
+}
+
+pub fn cadence_to_speed(cadence: i32, gear_ratio: f32, wheel_diameter: f32) {
+    let wheel_circumference = wheel_diameter * std::f32::consts::PI;
+    let speed = (wheel_circumference * cadence as f32) / (gear_ratio * 60.0);
+    println!("{speed:.1} mph");
+}
+
+pub fn speed_to_cadence(speed: f32, gear_ratio: f32, wheel_diameter: f32) {
+    let wheel_circumference = wheel_diameter * std::f32::consts::PI;
+    let cadence = speed * gear_ratio * 60.0 / wheel_circumference;
+    println!("{cadence:.1} rpm");
+}
+
+fn gear_inches(chainring: i32, cassette: (i32, i32), as_gearinches: Option<bool>) {
+    let chainring: &[i32] = &[chainring]; 
+    let cassette: &[i32] = &[cassette.0, cassette.1];
+    let ratios: Vec<_> = chainring.iter().map(|c| {
+        cassette.iter().map(|c2| {
+            (*c as f32) / (*c2 as f32)
+        }).collect::<Vec<_>>()
+    }).collect();
+    for (i, first) in ratios.iter().enumerate() {
+        let chainring = chainring[i];
+        print!("{chainring}: ");
+        for (j, second) in first.iter().enumerate() {
+            let cassette = cassette[j];
+            let second = match as_gearinches{
+                Some(true) => *second as f32 * 26.5,
+                _ => *second as f32,
+            };
+
+            print!("{second:.1} ({cassette}) ");
+        }
+        println!();
+    }
 }
