@@ -61,8 +61,8 @@ pub fn main() -> Result<()> {
 
 fn tyre_pressure(tyrewidth: i32, rider_weight: f32, bike_weight: f32) {
     let sysweight = rider_weight + bike_weight;
-    let wfront = sysweight * 0.45;
-    let wback = sysweight * 0.55;
+    let wfront = sysweight * 0.48;
+    let wback = sysweight * 0.53;
 
     let wpow: f64 = (tyrewidth as f64).powf(1.5785);
     let psi_front = ((338.14 * wfront as f64) / wpow) - 7.1685;
