@@ -26,10 +26,10 @@ enum Bike {
     },
     #[structopt(aliases = &["gears", "gi", "gearinches"])]
     GearInches {
-        #[structopt(help="Chainring teeth, e.g. 53x39")]
-        chainring: String,
-        #[structopt(help="Cassette ratio, e.g. 11:30")]
-        cassette: String,
+        #[structopt(help="Chainring size [n_teeth]", long="chainring", short="r")]
+        chainring: Vec<i32>,
+        #[structopt(help="Cassette size [n_teeth]", long="cassette", short="c")]
+        cassette: Vec<i32>,
         #[structopt(short="g", long)]
         as_gearinches: bool,
     },
@@ -130,9 +130,7 @@ pub fn speed_to_cadence(speed: f32, gear_ratio: f32, wheel_diameter: f32) {
     println!("{cadence:.1} rpm");
 }
 
-fn gear_inches(chainring: String, cassette: String, as_gearinches: bool) {
-    let chainring: Vec<i32> = chainring.split('x').map(|x| x.parse().unwrap()).collect();
-    let cassette: Vec<i32> = cassette.split('-').map(|x| x.parse().unwrap()).collect();
+fn gear_inches(chainring: Vec<i32>, cassette: Vec<i32>, as_gearinches: bool) {
     for cr in &chainring {
         let rat = cassette.iter().map(|cs| {
             let rat = (*cr as f32) / (*cs as f32);
